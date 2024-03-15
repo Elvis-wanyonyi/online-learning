@@ -1,0 +1,116 @@
+services:
+  #Curriculum
+  postgres-curriculum:
+    container_name: postgres-curriculum
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: curriculum
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: 1234
+      PGDATA: /data/postgres
+    volumes:
+      - ./postgres-curriculum:/data/postgres
+    expose:
+      - "5431"
+    ports:
+      - "5431:5431"
+    command: -p 5431
+    restart: always
+
+  curriculum:
+    image: curriculum:latest
+    container_name: curriculum
+    depends_on:
+      - postgres-curriculum
+      - registry
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-curriculum:5431/curriculum
+
+  ##Assessment
+  postgres-assessment:
+    container_name: postgres-assessment
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: assessment
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: 1234
+      PGDATA: /data/postgres
+    volumes:
+      - ./postgres-assessment:/data/postgres
+    expose:
+      - "5432"
+    ports:
+      - "5432:5432"
+    command: -p 5432
+    restart: always
+
+  assessment:
+    image: assessment:latest
+    container_name: assessment
+    depends_on:
+      - postgres-assessment
+      - registry
+    ports:
+      - "8088:8088"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-assessment:5432/assessment
+
+    #Content
+  postgres-content:
+    container_name: postgres-content
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: content
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: 1234
+      PGDATA: /data/postgres
+    volumes:
+      - ./postgres-content:/data/postgres
+    expose:
+      - "5434"
+    ports:
+      - "5434:5434"
+    command: -p 5434
+    restart: always
+
+  content:
+    image: content:latest
+    container_name: content
+    depends_on:
+      - postgres-content
+      - registry
+    ports:
+      - "8090:8090"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-content:5434/content
+
+  ##Eureka server
+  registry:
+    image: registry:latest
+    container_name: registry
+    ports:
+      - "8761:8761"
+    environment:
+      EUREKA_CLIENT_REGISTER_WITH_EUREKA: false
+      SPRING_PROFILES_ACTIVE: docker
+
+  # API Gateway
+  gateway:
+    image: gateway:latest
+    container_name: gateway
+    ports:
+      - "8080:8080"
+    expose:
+      - "8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY: TRACE
+    depends_on:
+      - registry
+
+

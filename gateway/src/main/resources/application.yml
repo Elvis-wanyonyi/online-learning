@@ -1,0 +1,41 @@
+logging:
+  level:
+    org:
+      springframework:
+        cloud:
+          gateway:
+            route:
+              RouteDefinitionLocator: INFO
+            nodeValue: TRACE
+    root: INFO
+
+spring:
+  cloud:
+    gateway:
+      routes[2]:
+        uri: lb://curriculum
+        id: curriculum
+        predicates[0]: Path=/api/**
+
+      routes[0]:
+        id: assessment
+        uri: lb://assessment
+        predicates[0]: Path=/assess/**
+
+      routes[1]:
+        id: content
+        predicates[0]: Path=/content/**
+        uri: lb://content
+
+  application:
+    name: gateway
+eureka:
+  instance:
+    hostname: localhost
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+server:
+  port: 8080
+
+
